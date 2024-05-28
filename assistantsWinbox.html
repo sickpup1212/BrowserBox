@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+        body {
+            background-color: #f0f0f0;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        #editor {
+            width: 100%;
+            height: 100%;
+            background-color: #2b2b2b;
+            color: white;
+            font-family: monospace;
+        }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f0f0f0;
+    }
+    .editor-container {
+      width: 90%;
+      height: 80%;
+    }
+    .winbox-content {
+      overflow: hidden;
+    }
+
+.flexrow {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+#retSwitch {
+  margin-left: 41px;
+}
+#filebtn {
+  margin-left: 53px;
+}
+#funcbtn {
+  margin-left: 53px;
+}
+
+.hide {
+  display: none;
+}
+</style>
+
+</head>
+<body>
+<div class="editor-container" id="editor-container">
+  <!-- Initial code editor window -->
+</div>
+
+<template id="asst">
+  <div class="formcontainer flexcol">
+<form>
+  <h1 class="boss">New Assistant</h1>
+  <h4 id="showid"></h4>
+  <hr>
+  <label for="name">Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </label>
+  <input type="text" id="name" placeholder="Assistant Name"><br><br>
+
+  <label for="instructions">Instructions: </label>
+  <textarea type="text" id="instructions" placeholder="Instructions"></textarea>
+  <br><br>
+    <label for="description">Description:</label>
+  <textarea type="text" id="description" placeholder="Description"></textarea>
+  <br><br>
+
+  <label for="model">Model:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+  <select id="model_choices_asst">
+    <option value="gpt-4">gpt-4</option>
+    <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+  </select><br>
+   <p id="tooled">Tools:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span id="toolcp">{"type": "code_interpreter"}, </span><span id="toolret">{"type": "retrieval"}</span>]</p>
+     
+</div>
+  <hr>
+   <div class="flexrowtools">
+     <label for="funcbtn">Functions</label>
+     <button id="funcbtn" class="toolbtn" type="button" class="btn" data-bs-toggle="modal" data-bs-target="#exampleModal" style="background-color: lightgrey; opacity: 1;">
++Function</button>
+     <!--p id="finalFuncShow"></p-->
+  </div>
+   <div class="flexrow">
+     <label for="interpSwitch" class="switch">Code interpreter&nbsp;</label>
+     <input type="checkbox" id="interpSwitch">
+     <button id="codeInterpFileAdd" class="hide">+ Files</button>
+   </div>
+   <div class="flexrowtools">
+     <label class="ret">File search</label>
+     <input type="checkbox" id="retSwitch">
+     <button id="fileSearchFileAdd" class="hide">+ Files</button>
+    </div>
+   <div class="flexrow">
+     <label for="filebtn">Add Files</label>
+     <button id="filebtn" class="toolbtn">+ Files</button>
+     <p id="show_loaded" style="display: none;">&nbsp;&nbsp;&nbsp;Loaded Files:&nbsp;</p><p class="filelist" style="display: none;">[<span id="loaded_files"></span>]</p>
+
+
+  </div>
+   <div class="flexrowtools">
+     <label for="vectbtn">Add Vector Store</label>
+     <button id="vectbtn" class="toolbtn">+ VectorStore</button>
+  </div>
+  <hr>
+
+
+
+   <div class="flexrowtools">
+       <small>Updated 3/18, 11:23 PM</small>
+     <button id="asstbtn" type="button">submit</button>
+  </div>
+
+
+</form>
+</div>
+
+</template>
+<template id="filesearch">
+  <h1>Upload new File</h1>
+    <form method=post enctype=multipart/form-data action="/upload">
+      <input type=file name=file>
+      <input type=submit value=Upload>
+    </form>
+  <br>
+  <h1>Choose from stored files</h1>
+  <div id="fileHolder">
+    <ui-trash></ui-trash>
+  </div>
+  <br>
+  <button id="loadselectedfiles">load</button>
+</template>
+<div id="hope">hello</div>
+<script src="https://rawcdn.githack.com/nextapps-de/winbox/0.2.82/dist/winbox.bundle.min.js"></script>
+
+<script>
+function createWin() {
+    const win = new WinBox({
+      title: 'assistant',
+      width: '40%',
+      height: '100%',
+      mount: document.getElementById('asst').content, 
+      onclose: function() {
+        console.log(``);
+      }
+    });
+}
+createWin()
+
+document.addEventListener('DOMContentLoaded', function() {
+    var interpSwitch = document.getElementById('interpSwitch');
+    var toolcp = document.getElementById('toolcp');
+    interpSwitch.addEventListener('change', function() {
+        toolcp.style.display = interpSwitch.checked ? 'block' : 'none';
+    });
+    toolcp.style.display = interpSwitch.checked ? 'block' : 'none';
+    var retSwitch = document.getElementById('retSwitch');
+    var toolret = document.getElementById('toolret');
+    retSwitch.addEventListener('change', function() {
+        toolret.style.display = retSwitch.checked ? 'block' : 'none';
+    });
+    toolret.style.display = retSwitch.checked ? 'block' : 'none';
+});
+/*
+function load_these() {
+    //getting all checkboxes
+    var lfiles = [...document.querySelectorAll('.card')];
+    //if some(any) of them are in a state of being checked
+    if (Array.from(lfiles).some(checkbox => checkbox.checked)) {
+        var slowed = document.getElementById('show_loaded');
+        var fliz = document.querySelector('.filelist');
+        slowed.style.display = "inline";
+        fliz.style.display = "inline";
+    }
+    var show_here = document.querySelector('#loaded_files');
+    lfiles.forEach(filez => {
+        if (filez.checked) {
+            show_here.textContent += filez.name + ", "
+        }
+    })
+    show_here.textContent = show_here.textContent.slice(0, -2);
+}
+*/
+function getSelectedCardElements() {
+    const uiTrashElements = [...document.querySelectorAll('ui-trash')];
+    const selectedCardElements = [];
+    uiTrashElements.forEach(trashElement => {
+        const shadowRoot = trashElement.shadowRoot;
+        if (shadowRoot) {
+            const matchingElements = shadowRoot.querySelectorAll('.card.selected');
+            selectedCardElements.push(...matchingElements);
+        }
+    });
+    if (selectedCardElements.length > 0) {
+        var show_here = document.querySelector('#loaded_files');
+        selectedCardElements.forEach(elm => {
+            show_here.textContent += elm.textContent + ", "
+        })
+        show_here.textContent = show_here.textContent.slice(0, -2);
+        var slowed = document.getElementById('show_loaded');
+        var fliz = document.querySelector('.filelist');
+        slowed.style.display = "inline";
+        fliz.style.display = "inline";
+    }
+}
+
+
+
+function createfilemod() {
+    new WinBox({
+      title: 'files',
+      width: '45%',
+      height: '80%',
+      mount: document.getElementById('filesearch').content, 
+      oncreate: function() {
+                alert('buttcheeks')
+                setTimeout(() => {
+                  var loadFileBtn = this.body.querySelector('#loadselectedfiles');
+                  console.log(loadFileBtn)
+                  if (loadFileBtn) {
+                    loadFileBtn.addEventListener('click', getSelectedCardElements);
+                  } else {
+                    console.log('error loading file load functions')
+                  }
+             }, 1000);
+    }
+  })
+    getFilenames();
+    //var loadFileBtn = document.querySelector('#loadselectedfiles');
+    //loadFileBtn.addEventListener('click', getSelectedCardElements());
+}
+/*
+function load_these() {
+  var lfiles = [...document.querySelectorAll('[type=checkbox]')];
+  var show_here = document.querySelector('#loaded_files');
+  lfiles.forEach(filez => { if (filez.checked) { show_here.textContent = show_here.textContent + filez.textContent + ", " } })
+  
+}*/
+var addfiles = document.querySelector('#filebtn');
+addfiles.addEventListener('click', createfilemod);
+
+    class UICardCheckbox extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+        this.state= {
+                   filename: this.ob('Carpeers.py'),
+                 };
+        this.isSelected = false;
+        this.selectedCount = 0;
+      }
+
+      connectedCallback() {
+        this.render();
+        this.bind(this.state);
+        var trash = this.shadowRoot.querySelector('.trash');
+        trash.addEventListener('mouseover', this.trashHover.bind(this));
+        trash.addEventListener('mouseout', this.trashHover.bind(this));
+        trash.addEventListener('click', this.verify.bind(this));
+        this.cardElement = this.shadowRoot.querySelector('.card');
+        this.cardElement.addEventListener('click', this.toggleSelection.bind(this));
+      }
+      
+      disconnectedCallback() {
+        const trash = this.shadowRoot.querySelector('#trash');
+        const cardElement = this.shadowRoot.querySelector('.card');
+        trash.removeEventListener('mouseover', this.trashHoverListener);
+        trash.removeEventListener('mouseout', this.trashHoverListener);
+        trash.removeEventListener('click', this.verifyListener);
+        cardElement.removeEventListener('click', this.toggleSelectionListener);
+      }
+      verify(event) {
+        if (confirm("Are you sure you want to proceed?")) {
+          var fileToDelete = event.target.parentNode.firstElementChild.textContent;
+          var elmToRemove = event.target.parentNode;
+          console.log('delete file: ' + fileToDelete);
+          elmToRemove.remove();
+        } else {
+          console.log("User clicked Cancel or closed the dialog");
+        }
+      }
+      
+      trashHover() {
+        var trash = this.shadowRoot.querySelector('.trash');
+        if (trash.src!="https://i.postimg.cc/9FhQqkBZ/tcanGrey.png") {
+          trash.src="https://i.postimg.cc/9FhQqkBZ/tcanGrey.png"
+        } else {
+          trash.src="https://i.postimg.cc/mk0wD1hs/tcan.png"
+        }
+      }
+      
+      toggleSelection() {
+        this.isSelected = !this.isSelected;
+        this.cardElement.classList.toggle('selected');
+        var trash = this.shadowRoot.querySelector('.trash');
+        if (trash.src!="https://i.postimg.cc/9FhQqkBZ/tcanGrey.png") {
+          trash.src="https://i.postimg.cc/9FhQqkBZ/tcanGrey.png"
+        } else {
+          trash.src="https://i.postimg.cc/mk0wD1hs/tcan.png"
+        }
+      }
+      bind(viewModel) {
+        var bindings = this.shadowRoot.querySelectorAll('[data-bind]');
+        bindings.forEach(element => {
+          var binding = element.getAttribute('data-bind');
+          var [bindType, modelProperty] = binding.split(': ');
+
+          if (bindType === 'text') {
+            viewModel[modelProperty].subscribe(newValue => {
+              element.textContent = newValue;
+            });
+            element.textContent = viewModel[modelProperty].get();
+          }
+
+          if (bindType === 'color') {
+            viewModel[modelProperty].subscribe(newValue => {
+              element.style.color = newValue;
+            });
+          }
+
+          if (bindType === 'link') {
+            viewModel[modelProperty].subscribe(newValue => {
+              element.href = newValue;
+          });
+            element.href = viewModel[modelProperty].get();
+          }
+
+          if (bindType === 'imagesrc') {
+            viewModel[modelProperty].subscribe(newValue => {
+              element.src = newValue;
+            });
+            element.src = viewModel[modelProperty].get();
+          }
+
+          if (bindType === 'visible') {
+            viewModel[modelProperty].subscribe(newValue => {
+              element.style.display = newValue ? '' : 'none';
+            });
+            element.style.display = viewModel[modelProperty].get() ? '' : 'none';
+          }
+
+          if (bindType === 'value') {
+            element.value = viewModel[modelProperty].get();
+            element.addEventListener('input', (e) => {
+              viewModel[modelProperty].set(e.target.value);
+            });
+            viewModel[modelProperty].subscribe(newValue => {
+              element.value = newValue;
+            });
+          }
+
+          if (bindType.trim() === 'linklist') {
+            viewModel[modelProperty].subscribe(newValue => {
+              element.innerHTML = Object(JSON.parse(newValue)).map(link => { return `<a class="link1" href="${link.href}">${link.text}</a>`;}).join('');
+            });
+            element.innerHTML = Object(JSON.parse(viewModel[modelProperty].get())).map(link => { return `<a class="link1" href="${link.href}">${link.text}</a>`;}).join('');;
+          }
+        })
+  }
+
+  ob(initialValue) {
+        let value = initialValue;
+        const listeners = [];
+        function notify(newValue) {
+            listeners.forEach(listener => listener(newValue));
+        }
+        return {
+            set(newValue) {
+                value = newValue;
+                notify(newValue);
+            },
+            get() {
+                return value;
+            },
+            subscribe(listener) {
+                listeners.push(listener);
+            }
+       };
+  }
+  
+  render() {
+            this.shadowRoot.innerHTML = `
+          <style>
+          .card{border:1px solid #ccc;padding:10px;width:auto;cursor:pointer;user-select:none}.card.selected{background-color:#e0e0e0}.flexrow{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:space-between}img{align-self:center}
+          </style>
+          <div class="flexrow card">
+            <p data-bind="text: filename">boobs.txt</p>
+            <img class="trash" src="https://i.postimg.cc/mk0wD1hs/tcan.png" alt="trash" width=32 height=32>
+          </div>`;
+  }    
+      
+  fireEvent(eventType, detail, options = {}) {
+      options.detail = detail || {};
+      options.bubbles = options.bubbles !== undefined ? options.bubbles : true;
+      options.cancelable = options.cancelable !== undefined ? options.cancelable : true;
+
+      const customEvent = new CustomEvent(eventType, options);
+      this.dispatchEvent(customEvent);
+
+      return customEvent;
+  }
+
+  changeCssProp(cssProp, newVal) {
+    this.style.setProperty(cssProp, newVal);
+  }
+
+  select(selector) {
+    return this.shadowRoot ? this.shadowRoot.querySelector(selector) : this.querySelector(selector);
+  }
+
+  selectAll(selector) {
+    return this.shadowRoot ? this.shadowRoot.querySelectorAll(selector) : this.querySelectorAll(selector);
+  }
+
+  getState(prop) {
+    return this.state[prop].get()
+  }
+
+  getStateKeys() {
+    return Object.keys(this.state)
+  }
+
+  getStateValues() {
+    return Object.values(this.state)
+  }
+
+  setState(prop, newVal) {
+    this.state[prop].set(newVal)
+    return this.state[prop].get()
+  }
+
+  setStateAll(propObject) {
+    this.state={};
+    this.bind(propObject);
+  }
+}
+
+customElements.define('ui-trash', UICardCheckbox);
+
+
+function $(tag){ return document.querySelector(tag) };
+var fileHolder = $('#fileHolder');
+var trashComp = $('ui-trash');
+async function getFilenames() {
+    try {
+        const response = await fetch('http://hyperspace.quest/api/v1/files/filenames/list');
+        console.log('Raw response:', response); 
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        const data = await response.json();  
+
+        if (Array.isArray(data)) {
+            var initial_states  = transformStringList(data);
+            for (let i = 0; i < initial_states.length; i++) {
+              createAndAppendCustomElement('#fileHolder', initial_states[i])
+            } 
+        } else {
+            console.error('Expected an array but received:', data);
+        }
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+    }
+}
+
+
+
+
+
+
+function transformStringList(stringList) {
+  function $(tag){ return document.querySelector(tag) };
+  var trashComp = $('ui-trash');
+  const transformedObjects = [];
+  for (const str of stringList) {
+    transformedObjects.push({ filename: trashComp.ob(`${str}`) });
+  }
+  return transformedObjects;
+}
+
+function createAndAppendCustomElement(selector, initialState) {
+    function $(tag){ return document.querySelector(tag) };
+    var attachTo = $(selector)
+    var element = document.createElement('ui-trash');
+    attachTo.appendChild(element);
+    element.bind(initialState);
+}
+
+        function getDocument() {
+            return document;
+        }
+        function find(eltOrSelector, selector) {
+            if (selector) {
+                return eltOrSelector.querySelector(selector);
+            } else {
+                return find(getDocument(), eltOrSelector);
+            }
+        }
+var chip = find(document.body, '#hope')
+
+        function getStartTag(str) {
+            var tagMatcher = /<([a-z][^\/\0>\x20\t\r\n\f]*)/i
+            var match = str.match(tagMatcher)
+            if (match) {
+                return match[1]
+            } else {
+                return "";
+            }
+        }
+var cheese=`<p></p><div class="editor-container" id="editor-container">
+  <!-- Initial code editor window -->
+</div>
+<template id="asst">
+  <div class="formcontainer flexcol">
+<form>
+  <h1 class="boss">New Assistant</h1>
+  <h4 id="showid"></h4>
+  <hr>
+  <label for="name">Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </label>`
+console.log(getStartTag(cheese))
+</script>
+
+</body>
+
+</html>
