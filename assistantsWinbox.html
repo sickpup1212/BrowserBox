@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
         body {
@@ -66,6 +64,7 @@
 <div class="editor-container" id="editor-container">
   <!-- Initial code editor window -->
 </div>
+<terminal-component id="tc" style="display: none"></terminal-component>
 
 <template id="asst">
   <div class="formcontainer flexcol">
@@ -147,9 +146,180 @@
   <br>
   <button id="loadselectedfiles">load</button>
 </template>
-<div id="hope">hello</div>
-<script src="https://rawcdn.githack.com/nextapps-de/winbox/0.2.82/dist/winbox.bundle.min.js"></script>
 
+<script src="https://rawcdn.githack.com/nextapps-de/winbox/0.2.82/dist/winbox.bundle.min.js"></script>
+<script>
+class TerminalComponent extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+
+                const terminal = document.createElement('textarea');
+                terminal.classList.add('terminal');
+                terminal.setAttribute('spellcheck', 'false');
+
+                const style = document.createElement('style');
+                style.textContent = `
+                    body {
+                        background-color: #2d2d2d;
+                        color: #dcdcdc;
+                        font-family: monospace;
+                    }
+                    .terminal {
+                        background-color: #1e1e1e;
+                        border: 1px solid #333;
+                        color: #dcdcdc;
+                        font-family: monospace;
+                        font-size: 14px;
+                        padding: 10px;
+                        width: 80%;
+                        height: 50px;
+                        resize: none;
+                        outline: none;
+                        overflow-y: auto;
+                        white-space: pre;
+                        box-shadow: inset 0 0 10px #000;
+                    }
+                `;
+
+                this.shadowRoot.append(style, terminal);
+
+                this.commands = {
+                    echo: (args) => {
+                        return args.join(' ');
+                    },
+                    help: () => {
+                        return 'Available commands: echo, help, date';
+                    },
+                    date: () => {
+                        return new Date().toString();
+                    }
+                };
+
+                terminal.addEventListener('keydown', (event) => {
+                    var butter = this.shadowRoot.querySelector('.terminal');
+                    var him = 50
+                    butter.style.height = him+'px';
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        const lines = terminal.value.split('\n');
+                        him+=50
+                        butter.style.height = him+'px';
+                      
+                        const lastLine = lines[lines.length - 1];
+                        const command = lastLine.slice(2).trim(); // Remove "$ " prompt
+                        const [cmd, ...args] = command.split(' ');
+
+                        let output = '';
+                        if (this.commands[cmd]) {
+                            output = this.commands[cmd](args);
+                        } else {
+                            output = `Command not found: ${cmd}`;
+                        }
+
+                        terminal.value += `\n${output}\n$ `;
+                    }
+                });
+
+                terminal.value = '$ ';
+            }
+        }
+
+        customElements.define('terminal-component', TerminalComponent);
+</script>
+<script>
+let textEditorWinBox;
+let editorWin;
+
+document.addEventListener("DOMContentLoaded", function() {
+    new WinBox({
+        title: "Control Panel",
+        width: "300px",
+        height: "200px",
+        x: "right",
+        y: "center",
+        html: `
+            <button onclick="openTextEditor()">Open Text Editor</button>
+            <button onclick="cmdline()">Cmd Line</button>
+            <button onclick="openFileExplorer()">Open File Explorer</button>
+            <button onclick="saveFile()">Save</button>
+            <button onclick="saveAs()">Save As</button>
+            <button onClick="createWin()">Open Assistant Manager</button>
+        `,
+    });
+});
+
+function openTextEditor() {
+    if (!textEditorWinBox || textEditorWinBox.closed) {
+        textEditorWinBox = new WinBox({
+            title: "Text Editor",
+            width: "50%",
+            height: "50%",
+            x: "center",
+            y: "center",
+            html: '<textarea id="text-editor" style="width:100%; height:90%;"></textarea>',
+            onresize: function(width, height) {
+                this.body.querySelector("textarea").style.height = (height - 40) + "px";
+            }
+        });
+    } else {
+        textEditorWinBox.focus();
+    }
+}
+
+function openFileExplorer() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const textEditor = document.getElementById("text-editor");
+            if (textEditor) {
+                textEditor.value = e.target.result;
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function saveFile() {
+    const textEditor = document.getElementById("text-editor");
+    if (textEditor) {
+        const blob = new Blob([textEditor.value], {type: 'text/plain'});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "saved-text.txt";
+        a.click();
+    }
+}
+
+function cmdline() {
+  function $(tag){ return document.querySelector(tag) };
+  var tip = $('terminal-component')
+  if (tip.style.display == 'none') {
+     tip.style.display = 'block';
+  } else {
+     tip.style.display = "none";
+  }
+
+}                        
+
+function saveAs() {
+    const filename = prompt("Save as:", "saved-text.txt");
+    if (filename) {
+        const textEditor = document.getElementById("text-editor");
+        if (textEditor) {
+            const blob = new Blob([textEditor.value], {type: 'text/plain'});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+        }
+    }
+}
+</script>
 <script>
 function createWin() {
     const win = new WinBox({
@@ -162,7 +332,7 @@ function createWin() {
       }
     });
 }
-createWin()
+
 
 document.addEventListener('DOMContentLoaded', function() {
     var interpSwitch = document.getElementById('interpSwitch');
@@ -178,26 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     toolret.style.display = retSwitch.checked ? 'block' : 'none';
 });
-/*
-function load_these() {
-    //getting all checkboxes
-    var lfiles = [...document.querySelectorAll('.card')];
-    //if some(any) of them are in a state of being checked
-    if (Array.from(lfiles).some(checkbox => checkbox.checked)) {
-        var slowed = document.getElementById('show_loaded');
-        var fliz = document.querySelector('.filelist');
-        slowed.style.display = "inline";
-        fliz.style.display = "inline";
-    }
-    var show_here = document.querySelector('#loaded_files');
-    lfiles.forEach(filez => {
-        if (filez.checked) {
-            show_here.textContent += filez.name + ", "
-        }
-    })
-    show_here.textContent = show_here.textContent.slice(0, -2);
-}
-*/
+
 function getSelectedCardElements() {
     const uiTrashElements = [...document.querySelectorAll('ui-trash')];
     const selectedCardElements = [];
