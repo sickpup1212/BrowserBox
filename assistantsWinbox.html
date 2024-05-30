@@ -2,48 +2,22 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://unpkg.com/htmx.org@1.6.1/dist/htmx.min.js"></script>
 <style>
-        body {
-            background-color: #f0f0f0;
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-        #editor {
-            width: 100%;
-            height: 100%;
-            background-color: #2b2b2b;
-            color: white;
-            font-family: monospace;
-        }
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: #f0f0f0;
-    }
-    .editor-container {
-      width: 90%;
-      height: 80%;
-    }
-    .winbox-content {
-      overflow: hidden;
-    }
-
+* {
+  box-sizing: border-box;
+}
+.boss {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
 .flexrow {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: flex-start;
 }
-
 #retSwitch {
   margin-left: 41px;
 }
@@ -53,85 +27,204 @@
 #funcbtn {
   margin-left: 53px;
 }
-
 .hide {
   display: none;
 }
+.style-0 {
+  cursor: pointer;
+  width: 100%;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+.flexrowsliders {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.flexcol {
+  display: flex;
+  flex-direction: column;
+}
+.tempDuo {
+  display: inline;
+  width: 40px;
+  border: none;
+  text-align: right;
+}
+.tempDuo:hover {
+  border: 1px solid lightgrey;
+  border-radius: 40px;
+}
+div {
+  padding: 5px;
+}
+.hide {
+  display: none;
+}
+.dblock {
+  display: block;
+}
+.inlineblock {
+  display: inline-block;
+}
+.op0 {
+  opacity: 0;
+}
+.op1 {
+  opacity: 1;
+}
+        .chatbot {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .chatbot-header {
+            display: flex;
+            flex-direction: column;
+            background: #007bff;
+            color: white;
+            padding: 10px;
+        }
+        .chatbot-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        .chatbot-input {
+            display: flex;
+            padding: 10px;
+            background: #fff;
+            border-top: 1px solid #ddd;
+        }
+        .chatbot-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .chatbot-input button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .fbrow { display: flex; justify-content: space-between; }
+
+    .message {
+      padding: 10px;
+      margin: 5px 0;
+      word-wrap: break-word;
+      border-radius: 20px;
+      max-width: 60%;
+    }
+
+    .left-aligned {
+      background-color: #e0e0e0;
+      align-self: flex-start;
+    }
+
+    .right-aligned {
+      box-sizing: border-box;
+      padding: 10px;
+      margin: 5px 0;
+      word-wrap: break-word;
+      border-radius: 20px;
+      max-width: 60%;
+      background-color: #0084ff;
+      color: white;
+      text-align: right;
+      align-self: flex-end;
+    }
 </style>
 
 </head>
 <body>
-<div class="editor-container" id="editor-container">
-  <!-- Initial code editor window -->
-</div>
+
 <terminal-component id="tc" style="display: none"></terminal-component>
 
+
+
 <template id="asst">
-  <div class="formcontainer flexcol">
-<form>
   <h1 class="boss">New Assistant</h1>
   <h4 id="showid"></h4>
   <hr>
-  <label for="name">Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </label>
+  <label for="name">Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
   <input type="text" id="name" placeholder="Assistant Name"><br><br>
-
   <label for="instructions">Instructions: </label>
   <textarea type="text" id="instructions" placeholder="Instructions"></textarea>
-  <br><br>
-    <label for="description">Description:</label>
+  <br>
+  <br>
+  <label for="description">Description:</label>
   <textarea type="text" id="description" placeholder="Description"></textarea>
-  <br><br>
-
+  <br>
+  <br>
   <label for="model">Model:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
   <select id="model_choices_asst">
     <option value="gpt-4">gpt-4</option>
     <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
-  </select><br>
-   <p id="tooled">Tools:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[<span id="toolcp">{"type": "code_interpreter"}, </span><span id="toolret">{"type": "retrieval"}</span>]</p>
-     
-</div>
-  <hr>
-   <div class="flexrowtools">
-     <label for="funcbtn">Functions</label>
-     <button id="funcbtn" class="toolbtn" type="button" class="btn" data-bs-toggle="modal" data-bs-target="#exampleModal" style="background-color: lightgrey; opacity: 1;">
-+Function</button>
-     <!--p id="finalFuncShow"></p-->
+  </select>
+  <br>
+  <p id="tooled">Tools:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[
+    <span id="toolcp">{"type": "code_interpreter"},</span>
+    <span id="toolret">{"type": "retrieval"}</span>]
+  </p>
+  <hr> 
+  <div class="flexrow">
+    <label for="funcbtn">Functions</label>
+    <button id="funcbtn" class="toolbtn" type="button" class="btn" data-bs-toggle="modal" data-bs-target="#exampleModal">+Function</button>
+    <!--p id="finalFuncShow"></p-->
   </div>
-   <div class="flexrow">
-     <label for="interpSwitch" class="switch">Code interpreter&nbsp;</label>
-     <input type="checkbox" id="interpSwitch">
-     <button id="codeInterpFileAdd" class="hide">+ Files</button>
-   </div>
-   <div class="flexrowtools">
-     <label class="ret">File search</label>
-     <input type="checkbox" id="retSwitch">
-     <button id="fileSearchFileAdd" class="hide">+ Files</button>
+  
+  <div class="flexrow">
+    <label for="interpSwitch" class="switch">Code interpreter&nbsp;</label>
+    <input type="checkbox" id="interpSwitch">
+    <button id="codeInterpFileAdd" class="hide">+ Files</button>
+  </div>
+  
+  <div class="flexrow">
+    <label class="ret">File search</label>
+    <input type="checkbox" id="retSwitch">
+    <button id="fileSearchFileAdd" class="hide">+ Files</button>
+  </div>
+  
+  <div class="flexrow">
+    <label for="filebtn">Add Files</label>
+    <button id="filebtn" class="toolbtn">+ Files</button>
+    <p id="show_loaded" style="display: none;">&nbsp;&nbsp;&nbsp;Loaded Files:&nbsp;</p>
+    <p class="filelist" style="display: none;">[<span id="loaded_files"></span>]</p>
+  </div>
+  
+  <div class="flexrow">
+    <label for="vectbtn">Add Vector Store</label>
+    <button id="vectbtn" class="toolbtn">+ VectorStore</button>
+  </div>
+  <hr>
+  <div class="flexcol divvy">
+    <div class="flexrow">
+      <div>Temperature</div>
+      <input type="text" id="tempTwoWayDisplay" class="tempDuo" placeholder='1'>
     </div>
-   <div class="flexrow">
-     <label for="filebtn">Add Files</label>
-     <button id="filebtn" class="toolbtn">+ Files</button>
-     <p id="show_loaded" style="display: none;">&nbsp;&nbsp;&nbsp;Loaded Files:&nbsp;</p><p class="filelist" style="display: none;">[<span id="loaded_files"></span>]</p>
-
-
+    <input id="progone" class="style-0" value="1" type="range" min="0" step="0.01" max="2" />
   </div>
-   <div class="flexrowtools">
-     <label for="vectbtn">Add Vector Store</label>
-     <button id="vectbtn" class="toolbtn">+ VectorStore</button>
+
+  <div class="flexcol divvy">
+    <div class="flexrow">
+      <div>Top P</div>
+      <input type="text" id="topTwoWayDisplay" class="tempDuo" placeholder='0.5'>
+    </div>
+    <input id="progtwo" class="style-0" value="0.5" type="range" min="0" step="0.01" max="1" />
   </div>
   <hr>
-
-
-
-   <div class="flexrowtools">
-       <small>Updated 3/18, 11:23 PM</small>
-     <button id="asstbtn" type="button">submit</button>
+  <div class="flexrow">
+    <small>Updated 3/18, 11:23 PM</small>
+    <button id="asstbtn" type="button">submit</button>
   </div>
-
-
-</form>
-</div>
-
 </template>
+
+
 <template id="filesearch">
   <h1>Upload new File</h1>
     <form method=post enctype=multipart/form-data action="/upload">
@@ -147,91 +240,108 @@
   <button id="loadselectedfiles">load</button>
 </template>
 
+
+    <div id="chatbot-template" class="chatbot" style="opacity: 0;">
+        <div class="chatbot-header">
+          <select id="dynamic-select" hx-get="http://hyperspace.quest/api/v1/assistant/list?show=idnamepair" hx-trigger="load" hx-target="#dynamic-select"></select>
+          <div class="fbrow">
+            <p id="currentThread"></p>
+            <button hx-get="http://hyperspace.quest/api/v1/thread/create?show=id" hx-target="#currentThread">new thread</button>
+          </div>
+        </div>
+        <div id="chatbot-messages" class="chatbot-messages">
+        </div>
+        <div class="chatbot-input">
+            <input id="usrinp" type="text" placeholder="Type a message...">
+            <button id="usrbtn">Send</button>
+        </div>
+    </div>
+
+
+
 <script src="https://rawcdn.githack.com/nextapps-de/winbox/0.2.82/dist/winbox.bundle.min.js"></script>
 <script>
-class TerminalComponent extends HTMLElement {
-            constructor() {
-                super();
-                this.attachShadow({ mode: 'open' });
+function $(tag){ return document.querySelector(tag) };
+var fileHolder = $('#fileHolder');
+var trashComp = $('ui-trash');
+var convo_history = []
 
-                const terminal = document.createElement('textarea');
-                terminal.classList.add('terminal');
-                terminal.setAttribute('spellcheck', 'false');
-
-                const style = document.createElement('style');
-                style.textContent = `
-                    body {
-                        background-color: #2d2d2d;
-                        color: #dcdcdc;
-                        font-family: monospace;
-                    }
-                    .terminal {
-                        background-color: #1e1e1e;
-                        border: 1px solid #333;
-                        color: #dcdcdc;
-                        font-family: monospace;
-                        font-size: 14px;
-                        padding: 10px;
-                        width: 80%;
-                        height: 50px;
-                        resize: none;
-                        outline: none;
-                        overflow-y: auto;
-                        white-space: pre;
-                        box-shadow: inset 0 0 10px #000;
-                    }
-                `;
-
-                this.shadowRoot.append(style, terminal);
-
-                this.commands = {
-                    echo: (args) => {
-                        return args.join(' ');
-                    },
-                    help: () => {
-                        return 'Available commands: echo, help, date';
-                    },
-                    date: () => {
-                        return new Date().toString();
-                    }
-                };
-
-                terminal.addEventListener('keydown', (event) => {
-                    var butter = this.shadowRoot.querySelector('.terminal');
-                    var him = 50
-                    butter.style.height = him+'px';
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        const lines = terminal.value.split('\n');
-                        him+=50
-                        butter.style.height = him+'px';
-                      
-                        const lastLine = lines[lines.length - 1];
-                        const command = lastLine.slice(2).trim(); // Remove "$ " prompt
-                        const [cmd, ...args] = command.split(' ');
-
-                        let output = '';
-                        if (this.commands[cmd]) {
-                            output = this.commands[cmd](args);
-                        } else {
-                            output = `Command not found: ${cmd}`;
-                        }
-
-                        terminal.value += `\n${output}\n$ `;
-                    }
-                });
-
-                terminal.value = '$ ';
-            }
+async function getFilenames() {
+    try {
+        const response = await fetch('http://hyperspace.quest/api/v1/files/filenames/list');
+        console.log('Raw response:', response); 
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
         }
+        const data = await response.json();  
 
-        customElements.define('terminal-component', TerminalComponent);
-</script>
-<script>
-let textEditorWinBox;
-let editorWin;
+        if (Array.isArray(data)) {
+            var initial_states  = transformStringList(data);
+            for (let i = 0; i < initial_states.length; i++) {
+              createAndAppendCustomElement('#fileHolder', initial_states[i])
+            } 
+        } else {
+            console.error('Expected an array but received:', data);
+        }
+    } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
+    }
+}
+
+function transformStringList(stringList) {
+  function $(tag){ return document.querySelector(tag) };
+  var trashComp = $('ui-trash');
+  const transformedObjects = [];
+  for (const str of stringList) {
+    transformedObjects.push({ filename: trashComp.ob(`${str}`) });
+  }
+  return transformedObjects;
+}
+
+function createAndAppendCustomElement(selector, initialState) {
+    function $(tag){ return document.querySelector(tag) };
+    var attachTo = $(selector)
+    var element = document.createElement('ui-trash');
+    attachTo.appendChild(element);
+    element.bind(initialState);
+}
+
+document.addEventListener('htmx:afterOnLoad', function(event) {
+    if (event.detail.target.id === 'dynamic-select') {
+        var selectElement = event.detail.target;
+        var jsonResponse = JSON.parse(event.detail.xhr.responseText);
+        console.log(jsonResponse);
+        jsonResponse.forEach(entry => {
+            const key = Object.keys(entry)[0];
+            const value = entry[key];
+            if (key && value) {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = key;
+                selectElement.appendChild(option);
+            }
+        });
+    }
+});
 
 document.addEventListener("DOMContentLoaded", function() {
+    new WinBox({
+      title: 'assistant',
+      width: '40%',
+      height: '100%',
+      mount: document.getElementById('asst').content, 
+      oncreate: function() {
+                console.log('before');
+                setTimeout(() => {
+                    console.log('start');     
+                    var mine = document.querySelector('#winbox-1');
+                    mine.classList.add('hide');
+                    console.log('end');  
+                }, "500");
+                console.log('after');
+           }
+    });
+
     new WinBox({
         title: "Control Panel",
         width: "300px",
@@ -244,11 +354,148 @@ document.addEventListener("DOMContentLoaded", function() {
             <button onclick="openFileExplorer()">Open File Explorer</button>
             <button onclick="saveFile()">Save</button>
             <button onclick="saveAs()">Save As</button>
-            <button onClick="createWin()">Open Assistant Manager</button>
-        `,
+            <button onClick="togWin1()">Open Assistant Manager</button>
+            <button onClick="togWin4()">Open Assistant Chat</button>`,
     });
+
+
+    new WinBox({
+        title: 'files',
+        width: '45%',
+        height: '80%',
+        mount: document.getElementById('filesearch').content, 
+        oncreate: function() {
+            setTimeout(() => {
+                getFilenames();
+                var loadFileBtn = this.body.querySelector('#loadselectedfiles');
+                console.log(loadFileBtn)
+                if (loadFileBtn) {
+                    loadFileBtn.addEventListener('click', getSelectedCardElements);
+                    var line = document.querySelector('#winbox-3');
+                    line.classList.add('hide');
+                } else {
+                    console.log('error loading file load functions')
+                }
+            }, "500");
+        }
+    })
+
+    var template = document.getElementById('chatbot-template');
+    if (template) {
+        //var content = template.content.cloneNode(true);
+        new WinBox({
+            title: "Chatbot",
+            width: "400px",
+            height: "500px",
+            x: "center",
+            y: "center",
+            mount: template,
+            oncreate: function() { 
+                document.querySelector('#chatbot-template').style.opacity = 1;
+                setTimeout(() => { 
+                    var cbot = document.querySelector('#winbox-4');
+                    cbot.classList.add('hide');
+                }, "500");
+            }
+        });
+    } else {
+        console.log('chatbox render issues.')
+    }    
+
+
+    var interpSwitch = document.getElementById('interpSwitch');
+    var toolcp = document.getElementById('toolcp');
+    interpSwitch.addEventListener('change', function() {
+        toolcp.style.display = interpSwitch.checked ? 'block' : 'none';
+    });
+    toolcp.style.display = interpSwitch.checked ? 'block' : 'none';
+    var retSwitch = document.getElementById('retSwitch');
+    var toolret = document.getElementById('toolret');
+    retSwitch.addEventListener('change', function() {
+        toolret.style.display = retSwitch.checked ? 'block' : 'none';
+    });
+    toolret.style.display = retSwitch.checked ? 'block' : 'none';
+
+    function $(tag){ return document.querySelector(tag) };
+    var tempbar = $('#progone')
+    var tempInput = $('#tempTwoWayDisplay')
+    var tempbartwo = $('#progtwo')
+    var tempInputTwo = $('#topTwoWayDisplay')
+    tempbar.addEventListener('change', () => {
+      tempInput.value = tempbar.value
+    })
+    tempInput.addEventListener('blur', () => {
+      tempbar.value = tempInput.value 
+    })
+    tempbartwo.addEventListener('change', () => {
+      tempInputTwo.value = tempbartwo.value
+    })
+    tempInputTwo.addEventListener('blur', () => {
+      tempbartwo.value = tempInputTwo.value 
+    })
+
+   var addfiles = document.querySelector('#filebtn');
+   addfiles.addEventListener('click', () => {
+     var winb3 = document.querySelector('#winbox-3');
+     winb3.classList.toggle('hide'); 
+  });
+
+
+  document.getElementById('usrbtn').addEventListener('click', async () => {
+    var assistant_choice = document.getElementById('dynamic-select').value;
+    var thread_choice = document.getElementById('currentThread').textContent;
+    var userInput = document.getElementById('usrinp').value.trim();
+    if (userInput) {
+      addMessage(userInput, 'left');
+      convo_history.push({'role': 'user', 'content': userInput})
+      document.getElementById('usrinp').value = '';
+      try {
+        const response = await fetch('http://hyperspace.quest/api/v1/runs/run', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({assistant_id: assistant_choice, message: userInput, thread: thread_choice})
+        });
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        var data = await response.text();
+
+        addMessage(data, 'right');
+        convo_history.push({'role': 'assistant', 'content': data})
+      } catch (error) {
+        console.error('There has been a problem with your fetch operation:', error);
+        addMessage('Error: Could not fetch response.', 'right');
+      }
+    }
+  });
+
+  function addMessage(text, align) {
+    var messageDiv = document.createElement('div');
+    messageDiv.classList.add('message', align === 'left' ? 'left-aligned' : 'right-aligned');
+    messageDiv.textContent = text;
+    document.getElementById('chatbot-messages').appendChild(messageDiv);
+  }
 });
 
+function togWin1() {
+  var winb1 = document.querySelector('#winbox-1');
+  winb1.classList.toggle('hide');
+}
+
+function togWin3() {
+  var winb3 = document.querySelector('#winbox-3');
+  winb3.classList.toggle('hide');
+}
+
+function togWin4() {
+  var winb4 = document.querySelector('#winbox-4');
+  winb4.classList.toggle('hide');
+}
+
+let textEditorWinBox;
 function openTextEditor() {
     if (!textEditorWinBox || textEditorWinBox.closed) {
         textEditorWinBox = new WinBox({
@@ -303,7 +550,6 @@ function cmdline() {
   } else {
      tip.style.display = "none";
   }
-
 }                        
 
 function saveAs() {
@@ -319,35 +565,6 @@ function saveAs() {
         }
     }
 }
-</script>
-<script>
-function createWin() {
-    const win = new WinBox({
-      title: 'assistant',
-      width: '40%',
-      height: '100%',
-      mount: document.getElementById('asst').content, 
-      onclose: function() {
-        console.log(``);
-      }
-    });
-}
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    var interpSwitch = document.getElementById('interpSwitch');
-    var toolcp = document.getElementById('toolcp');
-    interpSwitch.addEventListener('change', function() {
-        toolcp.style.display = interpSwitch.checked ? 'block' : 'none';
-    });
-    toolcp.style.display = interpSwitch.checked ? 'block' : 'none';
-    var retSwitch = document.getElementById('retSwitch');
-    var toolret = document.getElementById('toolret');
-    retSwitch.addEventListener('change', function() {
-        toolret.style.display = retSwitch.checked ? 'block' : 'none';
-    });
-    toolret.style.display = retSwitch.checked ? 'block' : 'none';
-});
 
 function getSelectedCardElements() {
     const uiTrashElements = [...document.querySelectorAll('ui-trash')];
@@ -373,181 +590,235 @@ function getSelectedCardElements() {
 }
 
 
+class TerminalComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({
+      mode: 'open'
+    });
 
-function createfilemod() {
-    new WinBox({
-      title: 'files',
-      width: '45%',
-      height: '80%',
-      mount: document.getElementById('filesearch').content, 
-      oncreate: function() {
-                alert('buttcheeks')
-                setTimeout(() => {
-                  var loadFileBtn = this.body.querySelector('#loadselectedfiles');
-                  console.log(loadFileBtn)
-                  if (loadFileBtn) {
-                    loadFileBtn.addEventListener('click', getSelectedCardElements);
-                  } else {
-                    console.log('error loading file load functions')
-                  }
-             }, 1000);
-    }
-  })
-    getFilenames();
-    //var loadFileBtn = document.querySelector('#loadselectedfiles');
-    //loadFileBtn.addEventListener('click', getSelectedCardElements());
+    const terminal = document.createElement('textarea');
+    terminal.classList.add('terminal');
+    terminal.setAttribute('spellcheck', 'false');
+
+    const style = document.createElement('style');
+    style.textContent = `
+                    body {
+                        background-color: #2d2d2d;
+                        color: #dcdcdc;
+                        font-family: monospace;
+                    }
+                    .terminal {
+                        background-color: #1e1e1e;
+                        border: 1px solid #333;
+                        color: #dcdcdc;
+                        font-family: monospace;
+                        font-size: 14px;
+                        padding: 10px;
+                        width: 80%;
+                        height: 50px;
+                        resize: none;
+                        outline: none;
+                        overflow-y: auto;
+                        white-space: pre;
+                        box-shadow: inset 0 0 10px #000;
+                    }
+                `;
+
+    this.shadowRoot.append(style, terminal);
+
+    this.commands = {
+      echo: (args) => {
+        return args.join(' ');
+      },
+      help: () => {
+        return 'Available commands: echo, help, date';
+      },
+      date: () => {
+        return new Date().toString();
+      }
+    };
+
+    terminal.addEventListener('keydown', (event) => {
+      var butter = this.shadowRoot.querySelector('.terminal');
+      var him = 50
+      butter.style.height = him + 'px';
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const lines = terminal.value.split('\n');
+        him += 50
+        butter.style.height = him + 'px';
+
+        const lastLine = lines[lines.length - 1];
+        const command = lastLine.slice(2).trim(); // Remove "$ " prompt
+        const [cmd, ...args] = command.split(' ');
+
+        let output = '';
+        if (this.commands[cmd]) {
+          output = this.commands[cmd](args);
+        } else {
+          output = `Command not found: ${cmd}`;
+        }
+
+        terminal.value += `\n${output}\n$ `;
+      }
+    });
+
+    terminal.value = '$ ';
+  }
 }
-/*
-function load_these() {
-  var lfiles = [...document.querySelectorAll('[type=checkbox]')];
-  var show_here = document.querySelector('#loaded_files');
-  lfiles.forEach(filez => { if (filez.checked) { show_here.textContent = show_here.textContent + filez.textContent + ", " } })
-  
-}*/
-var addfiles = document.querySelector('#filebtn');
-addfiles.addEventListener('click', createfilemod);
 
-    class UICardCheckbox extends HTMLElement {
-      constructor() {
-        super();
-        this.attachShadow({ mode: 'open' });
-        this.state= {
-                   filename: this.ob('Carpeers.py'),
-                 };
-        this.isSelected = false;
-        this.selectedCount = 0;
+customElements.define('terminal-component', TerminalComponent);
+
+
+class UICardCheckbox extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({
+      mode: 'open'
+    });
+    this.state = {
+      filename: this.ob('Carpeers.py'),
+    };
+    this.isSelected = false;
+    this.selectedCount = 0;
+  }
+
+  connectedCallback() {
+    this.render();
+    this.bind(this.state);
+    var trash = this.shadowRoot.querySelector('.trash');
+    trash.addEventListener('mouseover', this.trashHover.bind(this));
+    trash.addEventListener('mouseout', this.trashHover.bind(this));
+    trash.addEventListener('click', this.verify.bind(this));
+    this.cardElement = this.shadowRoot.querySelector('.card');
+    this.cardElement.addEventListener('click', this.toggleSelection.bind(this));
+  }
+
+  disconnectedCallback() {
+    const trash = this.shadowRoot.querySelector('#trash');
+    const cardElement = this.shadowRoot.querySelector('.card');
+    trash.removeEventListener('mouseover', this.trashHoverListener);
+    trash.removeEventListener('mouseout', this.trashHoverListener);
+    trash.removeEventListener('click', this.verifyListener);
+    cardElement.removeEventListener('click', this.toggleSelectionListener);
+  }
+  verify(event) {
+    if (confirm("Are you sure you want to proceed?")) {
+      var fileToDelete = event.target.parentNode.firstElementChild.textContent;
+      var elmToRemove = event.target.parentNode;
+      console.log('delete file: ' + fileToDelete);
+      elmToRemove.remove();
+    } else {
+      console.log("User clicked Cancel or closed the dialog");
+    }
+  }
+
+  trashHover() {
+    var trash = this.shadowRoot.querySelector('.trash');
+    if (trash.src != "https://i.postimg.cc/9FhQqkBZ/tcanGrey.png") {
+      trash.src = "https://i.postimg.cc/9FhQqkBZ/tcanGrey.png"
+    } else {
+      trash.src = "https://i.postimg.cc/mk0wD1hs/tcan.png"
+    }
+  }
+
+  toggleSelection() {
+    this.isSelected = !this.isSelected;
+    this.cardElement.classList.toggle('selected');
+    var trash = this.shadowRoot.querySelector('.trash');
+    if (trash.src != "https://i.postimg.cc/9FhQqkBZ/tcanGrey.png") {
+      trash.src = "https://i.postimg.cc/9FhQqkBZ/tcanGrey.png"
+    } else {
+      trash.src = "https://i.postimg.cc/mk0wD1hs/tcan.png"
+    }
+  }
+  bind(viewModel) {
+    var bindings = this.shadowRoot.querySelectorAll('[data-bind]');
+    bindings.forEach(element => {
+      var binding = element.getAttribute('data-bind');
+      var [bindType, modelProperty] = binding.split(': ');
+
+      if (bindType === 'text') {
+        viewModel[modelProperty].subscribe(newValue => {
+          element.textContent = newValue;
+        });
+        element.textContent = viewModel[modelProperty].get();
       }
 
-      connectedCallback() {
-        this.render();
-        this.bind(this.state);
-        var trash = this.shadowRoot.querySelector('.trash');
-        trash.addEventListener('mouseover', this.trashHover.bind(this));
-        trash.addEventListener('mouseout', this.trashHover.bind(this));
-        trash.addEventListener('click', this.verify.bind(this));
-        this.cardElement = this.shadowRoot.querySelector('.card');
-        this.cardElement.addEventListener('click', this.toggleSelection.bind(this));
+      if (bindType === 'color') {
+        viewModel[modelProperty].subscribe(newValue => {
+          element.style.color = newValue;
+        });
       }
-      
-      disconnectedCallback() {
-        const trash = this.shadowRoot.querySelector('#trash');
-        const cardElement = this.shadowRoot.querySelector('.card');
-        trash.removeEventListener('mouseover', this.trashHoverListener);
-        trash.removeEventListener('mouseout', this.trashHoverListener);
-        trash.removeEventListener('click', this.verifyListener);
-        cardElement.removeEventListener('click', this.toggleSelectionListener);
+
+      if (bindType === 'link') {
+        viewModel[modelProperty].subscribe(newValue => {
+          element.href = newValue;
+        });
+        element.href = viewModel[modelProperty].get();
       }
-      verify(event) {
-        if (confirm("Are you sure you want to proceed?")) {
-          var fileToDelete = event.target.parentNode.firstElementChild.textContent;
-          var elmToRemove = event.target.parentNode;
-          console.log('delete file: ' + fileToDelete);
-          elmToRemove.remove();
-        } else {
-          console.log("User clicked Cancel or closed the dialog");
-        }
+
+      if (bindType === 'imagesrc') {
+        viewModel[modelProperty].subscribe(newValue => {
+          element.src = newValue;
+        });
+        element.src = viewModel[modelProperty].get();
       }
-      
-      trashHover() {
-        var trash = this.shadowRoot.querySelector('.trash');
-        if (trash.src!="https://i.postimg.cc/9FhQqkBZ/tcanGrey.png") {
-          trash.src="https://i.postimg.cc/9FhQqkBZ/tcanGrey.png"
-        } else {
-          trash.src="https://i.postimg.cc/mk0wD1hs/tcan.png"
-        }
+
+      if (bindType === 'visible') {
+        viewModel[modelProperty].subscribe(newValue => {
+          element.style.display = newValue ? '' : 'none';
+        });
+        element.style.display = viewModel[modelProperty].get() ? '' : 'none';
       }
-      
-      toggleSelection() {
-        this.isSelected = !this.isSelected;
-        this.cardElement.classList.toggle('selected');
-        var trash = this.shadowRoot.querySelector('.trash');
-        if (trash.src!="https://i.postimg.cc/9FhQqkBZ/tcanGrey.png") {
-          trash.src="https://i.postimg.cc/9FhQqkBZ/tcanGrey.png"
-        } else {
-          trash.src="https://i.postimg.cc/mk0wD1hs/tcan.png"
-        }
+
+      if (bindType === 'value') {
+        element.value = viewModel[modelProperty].get();
+        element.addEventListener('input', (e) => {
+          viewModel[modelProperty].set(e.target.value);
+        });
+        viewModel[modelProperty].subscribe(newValue => {
+          element.value = newValue;
+        });
       }
-      bind(viewModel) {
-        var bindings = this.shadowRoot.querySelectorAll('[data-bind]');
-        bindings.forEach(element => {
-          var binding = element.getAttribute('data-bind');
-          var [bindType, modelProperty] = binding.split(': ');
 
-          if (bindType === 'text') {
-            viewModel[modelProperty].subscribe(newValue => {
-              element.textContent = newValue;
-            });
-            element.textContent = viewModel[modelProperty].get();
-          }
-
-          if (bindType === 'color') {
-            viewModel[modelProperty].subscribe(newValue => {
-              element.style.color = newValue;
-            });
-          }
-
-          if (bindType === 'link') {
-            viewModel[modelProperty].subscribe(newValue => {
-              element.href = newValue;
-          });
-            element.href = viewModel[modelProperty].get();
-          }
-
-          if (bindType === 'imagesrc') {
-            viewModel[modelProperty].subscribe(newValue => {
-              element.src = newValue;
-            });
-            element.src = viewModel[modelProperty].get();
-          }
-
-          if (bindType === 'visible') {
-            viewModel[modelProperty].subscribe(newValue => {
-              element.style.display = newValue ? '' : 'none';
-            });
-            element.style.display = viewModel[modelProperty].get() ? '' : 'none';
-          }
-
-          if (bindType === 'value') {
-            element.value = viewModel[modelProperty].get();
-            element.addEventListener('input', (e) => {
-              viewModel[modelProperty].set(e.target.value);
-            });
-            viewModel[modelProperty].subscribe(newValue => {
-              element.value = newValue;
-            });
-          }
-
-          if (bindType.trim() === 'linklist') {
-            viewModel[modelProperty].subscribe(newValue => {
-              element.innerHTML = Object(JSON.parse(newValue)).map(link => { return `<a class="link1" href="${link.href}">${link.text}</a>`;}).join('');
-            });
-            element.innerHTML = Object(JSON.parse(viewModel[modelProperty].get())).map(link => { return `<a class="link1" href="${link.href}">${link.text}</a>`;}).join('');;
-          }
-        })
+      if (bindType.trim() === 'linklist') {
+        viewModel[modelProperty].subscribe(newValue => {
+          element.innerHTML = Object(JSON.parse(newValue)).map(link => {
+            return `<a class="link1" href="${link.href}">${link.text}</a>`;
+          }).join('');
+        });
+        element.innerHTML = Object(JSON.parse(viewModel[modelProperty].get())).map(link => {
+          return `<a class="link1" href="${link.href}">${link.text}</a>`;
+        }).join('');;
+      }
+    })
   }
 
   ob(initialValue) {
-        let value = initialValue;
-        const listeners = [];
-        function notify(newValue) {
-            listeners.forEach(listener => listener(newValue));
-        }
-        return {
-            set(newValue) {
-                value = newValue;
-                notify(newValue);
-            },
-            get() {
-                return value;
-            },
-            subscribe(listener) {
-                listeners.push(listener);
-            }
-       };
+    let value = initialValue;
+    const listeners = [];
+
+    function notify(newValue) {
+      listeners.forEach(listener => listener(newValue));
+    }
+    return {
+      set(newValue) {
+        value = newValue;
+        notify(newValue);
+      },
+      get() {
+        return value;
+      },
+      subscribe(listener) {
+        listeners.push(listener);
+      }
+    };
   }
-  
+
   render() {
-            this.shadowRoot.innerHTML = `
+    this.shadowRoot.innerHTML = `
           <style>
           .card{border:1px solid #ccc;padding:10px;width:auto;cursor:pointer;user-select:none}.card.selected{background-color:#e0e0e0}.flexrow{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:space-between}img{align-self:center}
           </style>
@@ -555,17 +826,17 @@ addfiles.addEventListener('click', createfilemod);
             <p data-bind="text: filename">boobs.txt</p>
             <img class="trash" src="https://i.postimg.cc/mk0wD1hs/tcan.png" alt="trash" width=32 height=32>
           </div>`;
-  }    
-      
+  }
+
   fireEvent(eventType, detail, options = {}) {
-      options.detail = detail || {};
-      options.bubbles = options.bubbles !== undefined ? options.bubbles : true;
-      options.cancelable = options.cancelable !== undefined ? options.cancelable : true;
+    options.detail = detail || {};
+    options.bubbles = options.bubbles !== undefined ? options.bubbles : true;
+    options.cancelable = options.cancelable !== undefined ? options.cancelable : true;
 
-      const customEvent = new CustomEvent(eventType, options);
-      this.dispatchEvent(customEvent);
+    const customEvent = new CustomEvent(eventType, options);
+    this.dispatchEvent(customEvent);
 
-      return customEvent;
+    return customEvent;
   }
 
   changeCssProp(cssProp, newVal) {
@@ -598,94 +869,12 @@ addfiles.addEventListener('click', createfilemod);
   }
 
   setStateAll(propObject) {
-    this.state={};
+    this.state = {};
     this.bind(propObject);
   }
 }
 
 customElements.define('ui-trash', UICardCheckbox);
-
-
-function $(tag){ return document.querySelector(tag) };
-var fileHolder = $('#fileHolder');
-var trashComp = $('ui-trash');
-async function getFilenames() {
-    try {
-        const response = await fetch('http://hyperspace.quest/api/v1/files/filenames/list');
-        console.log('Raw response:', response); 
-        if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
-        }
-        const data = await response.json();  
-
-        if (Array.isArray(data)) {
-            var initial_states  = transformStringList(data);
-            for (let i = 0; i < initial_states.length; i++) {
-              createAndAppendCustomElement('#fileHolder', initial_states[i])
-            } 
-        } else {
-            console.error('Expected an array but received:', data);
-        }
-    } catch (error) {
-        console.error('There was a problem with the fetch operation:', error);
-    }
-}
-
-
-
-
-
-
-function transformStringList(stringList) {
-  function $(tag){ return document.querySelector(tag) };
-  var trashComp = $('ui-trash');
-  const transformedObjects = [];
-  for (const str of stringList) {
-    transformedObjects.push({ filename: trashComp.ob(`${str}`) });
-  }
-  return transformedObjects;
-}
-
-function createAndAppendCustomElement(selector, initialState) {
-    function $(tag){ return document.querySelector(tag) };
-    var attachTo = $(selector)
-    var element = document.createElement('ui-trash');
-    attachTo.appendChild(element);
-    element.bind(initialState);
-}
-
-        function getDocument() {
-            return document;
-        }
-        function find(eltOrSelector, selector) {
-            if (selector) {
-                return eltOrSelector.querySelector(selector);
-            } else {
-                return find(getDocument(), eltOrSelector);
-            }
-        }
-var chip = find(document.body, '#hope')
-
-        function getStartTag(str) {
-            var tagMatcher = /<([a-z][^\/\0>\x20\t\r\n\f]*)/i
-            var match = str.match(tagMatcher)
-            if (match) {
-                return match[1]
-            } else {
-                return "";
-            }
-        }
-var cheese=`<p></p><div class="editor-container" id="editor-container">
-  <!-- Initial code editor window -->
-</div>
-<template id="asst">
-  <div class="formcontainer flexcol">
-<form>
-  <h1 class="boss">New Assistant</h1>
-  <h4 id="showid"></h4>
-  <hr>
-  <label for="name">Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </label>`
-console.log(getStartTag(cheese))
 </script>
 
 </body>
